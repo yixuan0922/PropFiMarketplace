@@ -1,11 +1,112 @@
-import express, { type Express, Request, Response } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertPropertySchema, insertInvestmentSchema, insertTokenTransactionSchema } from "@shared/schema";
+import { insertUserSchema, insertPropertySchema, insertInvestmentSchema, insertTokenTransactionSchema, insertConsultationSchema, User } from "@shared/schema";
 import { z } from "zod";
 import { ZodError } from "zod-validation-error";
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import session from "express-session";
+import crypto from "crypto";
+
+// Define session type
+declare module 'express-session' {
+  interface SessionData {
+    passport: {
+      user: number;
+    };
+  }
+}
+
+// Setup authentication middleware
+function setupAuth(app: Express) {
+  // Use Express session middleware
+  app.use(session({
+    secret: 'propfi-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    store: storage.sessionStore,
+    cookie: { secure: process.env.NODE_ENV === 'production' }
+  }));
+
+  // Initialize Passport and restore authentication state from session
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  // Configure Passport to use local strategy
+  passport.use(new LocalStrategy(async (username, password, done) => {
+    try {
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+      
+      // In a real application, you would hash passwords
+      if (user.password !== password) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  }));
+
+  // Serialize user to session
+  passport.serializeUser((user: User, done) => {
+    done(null, user.id);
+  });
+
+  // Deserialize user from session
+  passport.deserializeUser(async (id: number, done) => {
+    try {
+      const user = await storage.getUser(id);
+      if (!user) {
+        return done(new Error(`User with id ${id} not found`));
+      }
+      done(null, user);
+    } catch (err) {
+      done(err);
+    }
+  });
+
+  // Authentication routes
+  app.post('/api/login', passport.authenticate('local'), (req: Request, res: Response) => {
+    // Remove password from user object before sending
+    const user = req.user as User;
+    const { password, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  });
+
+  app.post('/api/logout', (req: Request, res: Response, next: NextFunction) => {
+    req.logout((err) => {
+      if (err) { return next(err); }
+      res.status(200).json({ message: 'Logged out successfully' });
+    });
+  });
+
+  app.get('/api/current-user', (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    
+    const user = req.user as User;
+    const { password, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
+  });
+}
+
+// Middleware to check if user is authenticated
+function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: 'Unauthorized' });
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication
+  setupAuth(app);
   // API routes - all prefixed with /api
   app.get("/api/properties", async (req: Request, res: Response) => {
     try {
@@ -42,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/properties", async (req: Request, res: Response) => {
+  app.post("/api/properties", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const propertyData = insertPropertySchema.parse(req.body);
       const property = await storage.createProperty(propertyData);
@@ -116,7 +217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Investments
-  app.post("/api/investments", async (req: Request, res: Response) => {
+  app.post("/api/investments", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const investmentData = insertInvestmentSchema.parse(req.body);
       
@@ -155,7 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get("/api/users/:id/investments", async (req: Request, res: Response) => {
+  app.get("/api/users/:id/investments", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -170,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Token Transactions
-  app.post("/api/token-transactions", async (req: Request, res: Response) => {
+  app.post("/api/token-transactions", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const transactionData = insertTokenTransactionSchema.parse(req.body);
       
@@ -192,7 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.patch("/api/token-transactions/:id/status", async (req: Request, res: Response) => {
+  app.patch("/api/token-transactions/:id/status", isAuthenticated, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -233,6 +334,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(transactions);
     } catch (error) {
       res.status(500).json({ message: "Error retrieving transactions" });
+    }
+  });
+  
+  // Consultations
+  app.post("/api/consultations", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const consultationData = insertConsultationSchema.parse(req.body);
+      
+      // Verify property exists
+      const property = await storage.getProperty(consultationData.propertyId);
+      if (!property) {
+        return res.status(404).json({ message: "Property not found" });
+      }
+      
+      // Create consultation
+      const consultation = await storage.createConsultation(consultationData);
+      
+      res.status(201).json(consultation);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid consultation data", errors: error.format() });
+      }
+      res.status(500).json({ message: "Error creating consultation" });
+    }
+  });
+  
+  app.get("/api/users/:id/consultations", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Verify user is requesting their own consultations or is an admin
+      const user = req.user as User;
+      if (user.id !== id && user.role !== 'admin') {
+        return res.status(403).json({ message: "Unauthorized to view these consultations" });
+      }
+      
+      const consultations = await storage.getConsultationsByUser(id);
+      res.json(consultations);
+    } catch (error) {
+      res.status(500).json({ message: "Error retrieving consultations" });
     }
   });
 

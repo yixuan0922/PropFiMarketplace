@@ -8,27 +8,42 @@ import PropertyDetailsPage from "@/pages/PropertyDetailsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import InvestPage from "@/pages/InvestPage";
 import HowItWorksPage from "@/pages/HowItWorksPage";
+import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
+import { ProtectedRoute } from "@/lib/protected-route";
+import { AuthProvider } from "@/hooks/use-auth";
+
+function Router() {
+  return (
+    <Switch>
+      <Route path="/" component={HomePage} />
+      <Route path="/marketplace" component={MarketplacePage} />
+      <Route path="/property/:id" component={PropertyDetailsPage} />
+      <Route path="/how-it-works" component={HowItWorksPage} />
+      <Route path="/auth" component={AuthPage} />
+      
+      {/* Protected Routes */}
+      <ProtectedRoute path="/dashboard" component={DashboardPage} />
+      <ProtectedRoute path="/invest" component={InvestPage} />
+      <ProtectedRoute path="/buy" component={MarketplacePage} />
+      
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow">
-        <Switch>
-          <Route path="/" component={HomePage} />
-          <Route path="/marketplace" component={MarketplacePage} />
-          <Route path="/property/:id" component={PropertyDetailsPage} />
-          <Route path="/dashboard" component={DashboardPage} />
-          <Route path="/invest" component={InvestPage} />
-          <Route path="/how-it-works" component={HowItWorksPage} />
-          <Route path="/buy" component={MarketplacePage} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      <Footer />
-      <Toaster />
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow">
+          <Router />
+        </main>
+        <Footer />
+        <Toaster />
+      </div>
+    </AuthProvider>
   );
 }
 

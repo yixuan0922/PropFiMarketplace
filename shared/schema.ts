@@ -2,6 +2,8 @@ import { pgTable, text, serial, integer, numeric, boolean, timestamp, foreignKey
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+export type UserRole = 'investor' | 'developer' | 'admin';
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
@@ -10,6 +12,7 @@ export const users = pgTable("users", {
   lastName: text("last_name"),
   email: text("email").notNull().unique(),
   profileImage: text("profile_image"),
+  role: text("role").notNull().default("investor"),
   isInvestor: boolean("is_investor").default(false),
   isHomebuyer: boolean("is_homebuyer").default(false),
   createdAt: timestamp("created_at").defaultNow(),
@@ -58,6 +61,17 @@ export const tokenTransactions = pgTable("token_transactions", {
   completedAt: timestamp("completed_at"),
 });
 
+export const consultations = pgTable("consultations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  propertyId: integer("property_id").references(() => properties.id, { onDelete: "cascade" }).notNull(),
+  type: text("type").notNull(), // homebuyer, investor
+  notes: text("notes"),
+  status: text("status").notNull().default("scheduled"), // scheduled, completed, cancelled
+  scheduledDate: timestamp("scheduled_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -66,6 +80,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   firstName: true,
   lastName: true,
   profileImage: true,
+  role: true,
   isInvestor: true,
   isHomebuyer: true,
 });
@@ -86,6 +101,11 @@ export const insertTokenTransactionSchema = createInsertSchema(tokenTransactions
   completedAt: true,
 });
 
+export const insertConsultationSchema = createInsertSchema(consultations).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -98,3 +118,6 @@ export type Investment = typeof investments.$inferSelect;
 
 export type InsertTokenTransaction = z.infer<typeof insertTokenTransactionSchema>;
 export type TokenTransaction = typeof tokenTransactions.$inferSelect;
+
+export type InsertConsultation = z.infer<typeof insertConsultationSchema>;
+export type Consultation = typeof consultations.$inferSelect;

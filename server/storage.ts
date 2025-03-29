@@ -1,12 +1,18 @@
 import {
-  users, properties, investments, tokenTransactions,
+  users, properties, investments, tokenTransactions, consultations,
   type User, type InsertUser,
   type Property, type InsertProperty,
   type Investment, type InsertInvestment,
-  type TokenTransaction, type InsertTokenTransaction
+  type TokenTransaction, type InsertTokenTransaction,
+  type Consultation, type InsertConsultation
 } from "@shared/schema";
+import session from "express-session";
+import createMemoryStore from "memorystore";
 
 export interface IStorage {
+  // Session store for authentication
+  sessionStore: session.Store;
+  
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -32,6 +38,13 @@ export interface IStorage {
   getTokenTransactionsByProperty(propertyId: number): Promise<TokenTransaction[]>;
   createTokenTransaction(transaction: InsertTokenTransaction): Promise<TokenTransaction>;
   updateTokenTransactionStatus(id: number, status: string, completedAt?: Date): Promise<TokenTransaction | undefined>;
+  
+  // Consultation operations
+  getConsultation(id: number): Promise<Consultation | undefined>;
+  getConsultationsByUser(userId: number): Promise<Consultation[]>;
+  getConsultationsByProperty(propertyId: number): Promise<Consultation[]>;
+  createConsultation(consultation: InsertConsultation): Promise<Consultation>;
+  updateConsultationStatus(id: number, status: string): Promise<Consultation | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -39,28 +52,90 @@ export class MemStorage implements IStorage {
   private properties: Map<number, Property>;
   private investments: Map<number, Investment>;
   private tokenTransactions: Map<number, TokenTransaction>;
+  private consultations: Map<number, Consultation>;
   
   private userIdCounter: number;
   private propertyIdCounter: number;
   private investmentIdCounter: number;
   private tokenTransactionIdCounter: number;
+  private consultationIdCounter: number;
+  
+  public sessionStore: session.Store;
   
   constructor() {
     this.users = new Map();
     this.properties = new Map();
     this.investments = new Map();
     this.tokenTransactions = new Map();
+    this.consultations = new Map();
     
     this.userIdCounter = 1;
     this.propertyIdCounter = 1;
     this.investmentIdCounter = 1;
     this.tokenTransactionIdCounter = 1;
+    this.consultationIdCounter = 1;
+    
+    // Initialize the memory store for sessions
+    const MemoryStore = createMemoryStore(session);
+    this.sessionStore = new MemoryStore({
+      checkPeriod: 86400000 // prune expired entries every 24h
+    });
     
     // Initialize with sample data for development
     this.initSampleData();
   }
   
   private initSampleData() {
+    // Add sample users for different roles
+    const sampleUsers: InsertUser[] = [
+      {
+        username: "investor1",
+        password: "password123",
+        firstName: "John",
+        lastName: "Investor",
+        email: "john@example.com",
+        profileImage: "https://randomuser.me/api/portraits/men/1.jpg",
+        role: "investor",
+        isInvestor: true,
+        isHomebuyer: false
+      },
+      {
+        username: "investor2",
+        password: "password123",
+        firstName: "Sara",
+        lastName: "Capital",
+        email: "sara@example.com",
+        profileImage: "https://randomuser.me/api/portraits/women/2.jpg",
+        role: "investor",
+        isInvestor: true,
+        isHomebuyer: false
+      },
+      {
+        username: "developer1",
+        password: "password123",
+        firstName: "Alex",
+        lastName: "Builder",
+        email: "alex@example.com",
+        profileImage: "https://randomuser.me/api/portraits/men/3.jpg",
+        role: "developer",
+        isInvestor: false,
+        isHomebuyer: false
+      },
+      {
+        username: "admin1",
+        password: "password123",
+        firstName: "Admin",
+        lastName: "User",
+        email: "admin@example.com",
+        profileImage: "https://randomuser.me/api/portraits/women/4.jpg",
+        role: "admin",
+        isInvestor: false,
+        isHomebuyer: false
+      }
+    ];
+    
+    const userPromises = sampleUsers.map(user => this.createUser(user));
+    
     // Add sample properties
     const sampleProperties: InsertProperty[] = [
       {
@@ -119,8 +194,60 @@ export class MemStorage implements IStorage {
       }
     ];
     
-    sampleProperties.forEach(property => {
-      this.createProperty(property);
+    const propertyPromises = sampleProperties.map(property => this.createProperty(property));
+
+    // Add sample investments for investors
+    Promise.all([...userPromises, ...propertyPromises]).then(() => {
+      const sampleInvestments: InsertInvestment[] = [
+        {
+          userId: 1, // investor1
+          propertyId: 1, // Modern Downtown Condo
+          percentage: 10,
+          amount: 60000,
+          isOccupier: false
+        },
+        {
+          userId: 1, // investor1
+          propertyId: 3, // Luxury Beachfront Villa
+          percentage: 5,
+          amount: 60000,
+          isOccupier: false
+        },
+        {
+          userId: 2, // investor2
+          propertyId: 2, // Suburban Family Home
+          percentage: 15,
+          amount: 67500,
+          isOccupier: false
+        }
+      ];
+      
+      sampleInvestments.forEach(investment => this.createInvestment(investment));
+      
+      // Add sample consultations
+      const now = new Date();
+      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      
+      const sampleConsultations: InsertConsultation[] = [
+        {
+          userId: 1, // investor1
+          propertyId: 2, // Suburban Family Home
+          type: "investor",
+          notes: "Interested in investing in this property, need more information.",
+          status: "scheduled",
+          scheduledDate: nextWeek
+        },
+        {
+          userId: 2, // investor2
+          propertyId: 3, // Luxury Beachfront Villa
+          type: "investor",
+          notes: "Looking to diversify portfolio with luxury properties.",
+          status: "scheduled",
+          scheduledDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+        }
+      ];
+      
+      sampleConsultations.forEach(consultation => this.createConsultation(consultation));
     });
   }
   
@@ -262,6 +389,47 @@ export class MemStorage implements IStorage {
     };
     this.tokenTransactions.set(id, updatedTransaction);
     return updatedTransaction;
+  }
+  
+  // Consultation operations
+  async getConsultation(id: number): Promise<Consultation | undefined> {
+    return this.consultations.get(id);
+  }
+  
+  async getConsultationsByUser(userId: number): Promise<Consultation[]> {
+    return Array.from(this.consultations.values()).filter(
+      (consultation) => consultation.userId === userId
+    );
+  }
+  
+  async getConsultationsByProperty(propertyId: number): Promise<Consultation[]> {
+    return Array.from(this.consultations.values()).filter(
+      (consultation) => consultation.propertyId === propertyId
+    );
+  }
+  
+  async createConsultation(insertConsultation: InsertConsultation): Promise<Consultation> {
+    const id = this.consultationIdCounter++;
+    const now = new Date();
+    const consultation: Consultation = {
+      ...insertConsultation,
+      id,
+      createdAt: now
+    };
+    this.consultations.set(id, consultation);
+    return consultation;
+  }
+  
+  async updateConsultationStatus(id: number, status: string): Promise<Consultation | undefined> {
+    const consultation = this.consultations.get(id);
+    if (!consultation) return undefined;
+    
+    const updatedConsultation: Consultation = {
+      ...consultation,
+      status
+    };
+    this.consultations.set(id, updatedConsultation);
+    return updatedConsultation;
   }
 }
 
