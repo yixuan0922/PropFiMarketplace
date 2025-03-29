@@ -4,21 +4,18 @@ import {
   useMutation,
   UseMutationResult,
 } from "@tanstack/react-query";
-import { User, InsertUser } from "@shared/schema";
+import { User } from "@shared/schema";
 import { getQueryFn, apiRequest, queryClient } from "../lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-// Define a type for user without password
-type UserWithoutPassword = Omit<User, 'password'>;
-
 // Define context types
 type AuthContextType = {
-  user: UserWithoutPassword | null;
+  user: User | null;
   isLoading: boolean;
   error: Error | null;
-  loginMutation: UseMutationResult<UserWithoutPassword, Error, LoginData>;
+  loginMutation: UseMutationResult<Omit<User, 'password'>, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<UserWithoutPassword, Error, InsertUser>;
+  registerMutation: UseMutationResult<Omit<User, 'password'>, Error, User>;
 };
 
 type LoginData = {
@@ -36,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     data: user,
     error,
     isLoading,
-  } = useQuery<UserWithoutPassword | null, Error>({
+  } = useQuery<Omit<User, 'password'> | null, Error>({
     queryKey: ['/api/current-user'],
     queryFn: getQueryFn({ on401: "returnNull" }),
   });
@@ -46,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await apiRequest("POST", "/api/login", credentials);
       return await res.json();
     },
-    onSuccess: (user: UserWithoutPassword) => {
+    onSuccess: (user: Omit<User, 'password'>) => {
       queryClient.setQueryData(['/api/current-user'], user);
       toast({
         title: "Login successful",
@@ -66,11 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (userData: InsertUser) => {
-      const res = await apiRequest("POST", "/api/register", userData);
+    mutationFn: async (userData: User) => {
+      const res = await apiRequest("POST", "/api/users", userData);
       return await res.json();
     },
-    onSuccess: (user: UserWithoutPassword) => {
+    onSuccess: (user: Omit<User, 'password'>) => {
       queryClient.setQueryData(['/api/current-user'], user);
       toast({
         title: "Registration successful",
