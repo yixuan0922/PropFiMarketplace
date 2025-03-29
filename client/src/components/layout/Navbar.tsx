@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/sheet';
 import { BellIcon, MenuIcon } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/use-auth';
 
 const NavLink: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => {
   const [location] = useLocation();
@@ -26,8 +27,8 @@ const NavLink: React.FC<{ href: string; children: React.ReactNode }> = ({ href, 
 };
 
 const Navbar = () => {
-  // For real implementation, this would come from auth context
-  const isLoggedIn = false;
+  const { user, logoutMutation } = useAuth();
+  const isLoggedIn = !!user;
   
   return (
     <nav className="bg-white shadow-sm">
@@ -68,15 +69,30 @@ const Navbar = () => {
                   <span className="sr-only">Notifications</span>
                 </Button>
                 
-                <Link href="/dashboard">
-                  <Avatar className="h-8 w-8 bg-primary cursor-pointer">
-                    <AvatarFallback>JS</AvatarFallback>
-                  </Avatar>
-                </Link>
+                <div className="flex items-center space-x-4">
+                  <Link href="/dashboard">
+                    <Avatar className="h-8 w-8 bg-primary cursor-pointer">
+                      <AvatarFallback>
+                        {user?.firstName && user?.lastName
+                          ? `${user.firstName[0]}${user.lastName[0]}`
+                          : user?.username?.[0]?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => logoutMutation.mutate()} 
+                    disabled={logoutMutation.isPending}
+                  >
+                    Logout
+                  </Button>
+                </div>
               </>
             ) : (
               <Button asChild className="ml-4">
-                <Link href="/login">Sign In</Link>
+                <Link href="/auth">Sign In</Link>
               </Button>
             )}
           </div>
@@ -115,17 +131,30 @@ const Navbar = () => {
                   {!isLoggedIn && (
                     <SheetClose asChild>
                       <Button asChild className="w-full">
-                        <Link href="/login">Sign In</Link>
+                        <Link href="/auth">Sign In</Link>
                       </Button>
                     </SheetClose>
                   )}
                   
                   {isLoggedIn && (
-                    <SheetClose asChild>
-                      <Link href="/dashboard" className="text-lg font-medium">
-                        Dashboard
-                      </Link>
-                    </SheetClose>
+                    <>
+                      <SheetClose asChild>
+                        <Link href="/dashboard" className="text-lg font-medium">
+                          Dashboard
+                        </Link>
+                      </SheetClose>
+                      
+                      <SheetClose asChild>
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => logoutMutation.mutate()} 
+                          disabled={logoutMutation.isPending}
+                        >
+                          Logout
+                        </Button>
+                      </SheetClose>
+                    </>
                   )}
                 </div>
               </SheetContent>
