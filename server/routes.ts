@@ -53,7 +53,7 @@ function setupAuth(app: Express) {
   }));
 
   // Serialize user to session
-  passport.serializeUser((user: User, done) => {
+  passport.serializeUser((user: any, done) => {
     done(null, user.id);
   });
 
@@ -76,6 +76,39 @@ function setupAuth(app: Express) {
     const user = req.user as User;
     const { password, ...userWithoutPassword } = user;
     res.json(userWithoutPassword);
+  });
+
+  app.post('/api/register', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userData = insertUserSchema.parse(req.body);
+      
+      // Check if username or email already exists
+      const existingUsername = await storage.getUserByUsername(userData.username);
+      if (existingUsername) {
+        return res.status(409).json({ message: "Username already exists" });
+      }
+      
+      const existingEmail = await storage.getUserByEmail(userData.email);
+      if (existingEmail) {
+        return res.status(409).json({ message: "Email already exists" });
+      }
+      
+      const user = await storage.createUser(userData);
+      
+      // Auto login after registration
+      req.login(user, (err) => {
+        if (err) return next(err);
+        
+        // Remove password from user object before sending
+        const { password, ...userWithoutPassword } = user;
+        res.status(201).json(userWithoutPassword);
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid user data", errors: error.format() });
+      }
+      res.status(500).json({ message: "Error creating user" });
+    }
   });
 
   app.post('/api/logout', (req: Request, res: Response, next: NextFunction) => {
