@@ -3,35 +3,18 @@ import UserDashboard from '@/components/dashboard/UserDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useQuery } from '@tanstack/react-query';
-import { User } from '@/lib/types';
 import { Link } from 'wouter';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 const DashboardPage: React.FC = () => {
-  // Mock user ID - in a real app this would come from auth context
-  const userId = 1;
-  
-  // Fetch user data
-  const { data: user, isLoading } = useQuery<User | null>({
-    queryKey: [`/api/users/${userId}`],
-    onError: () => {
-      return null;
-    }
-  });
+  // Get user from auth context
+  const { user, isLoading } = useAuth();
   
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="animate-pulse">
-          <div className="h-10 bg-neutral-200 rounded mb-6 w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-32 bg-neutral-200 rounded"></div>
-            ))}
-          </div>
-          <div className="h-96 bg-neutral-200 rounded"></div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
@@ -49,10 +32,7 @@ const DashboardPage: React.FC = () => {
             </p>
             <div className="flex space-x-4">
               <Button asChild>
-                <Link href="/login">Sign In</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/signup">Create Account</Link>
+                <Link href="/auth">Sign In</Link>
               </Button>
             </div>
           </CardContent>
