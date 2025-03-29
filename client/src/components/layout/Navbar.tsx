@@ -7,7 +7,15 @@ import {
   SheetTrigger,
   SheetClose
 } from '@/components/ui/sheet';
-import { BellIcon, MenuIcon } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BellIcon, MenuIcon, User, Settings, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -63,33 +71,60 @@ const Navbar = () => {
           
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {isLoggedIn ? (
-              <>
+              <div className="flex items-center space-x-4">
                 <Button variant="ghost" size="icon" className="mr-2">
                   <BellIcon className="w-5 h-5 text-neutral-400 hover:text-neutral-500" />
                   <span className="sr-only">Notifications</span>
                 </Button>
                 
-                <div className="flex items-center space-x-4">
-                  <Link href="/dashboard">
-                    <Avatar className="h-8 w-8 bg-primary cursor-pointer">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="h-9 w-9 bg-primary cursor-pointer">
                       <AvatarFallback>
                         {user?.firstName && user?.lastName
                           ? `${user.firstName[0]}${user.lastName[0]}`
                           : user?.username?.[0]?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                  </Link>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => logoutMutation.mutate()} 
-                    disabled={logoutMutation.isPending}
-                  >
-                    Logout
-                  </Button>
-                </div>
-              </>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {user?.firstName && user?.lastName 
+                            ? `${user.firstName} ${user.lastName}` 
+                            : user?.username}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard" className="flex cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard?tab=account" className="flex cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => logoutMutation.mutate()} 
+                      disabled={logoutMutation.isPending}
+                      className="text-red-500 focus:text-red-500"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
               <Button asChild className="ml-4">
                 <Link href="/auth">Sign In</Link>
@@ -107,6 +142,28 @@ const Navbar = () => {
               </SheetTrigger>
               <SheetContent side="right">
                 <div className="flex flex-col space-y-6 mt-6">
+                  {isLoggedIn && (
+                    <div className="flex items-center pb-4 border-b border-border mb-2">
+                      <Avatar className="h-12 w-12 bg-primary mr-3">
+                        <AvatarFallback>
+                          {user?.firstName && user?.lastName
+                            ? `${user.firstName[0]}${user.lastName[0]}`
+                            : user?.username?.[0]?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">
+                          {user?.firstName && user?.lastName 
+                            ? `${user.firstName} ${user.lastName}` 
+                            : user?.username}
+                        </p>
+                        <p className="text-sm text-muted-foreground truncate max-w-[180px]">
+                          {user?.email}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <SheetClose asChild>
                     <Link href="/marketplace" className="text-lg font-medium">
                       Marketplace
@@ -128,33 +185,41 @@ const Navbar = () => {
                     </Link>
                   </SheetClose>
                   
+                  {isLoggedIn && (
+                    <>
+                      <div className="h-px bg-border my-2"></div>
+                      <SheetClose asChild>
+                        <Link href="/dashboard" className="flex items-center text-lg font-medium">
+                          <User className="mr-2 h-5 w-5" />
+                          Dashboard
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Link href="/dashboard?tab=account" className="flex items-center text-lg font-medium">
+                          <Settings className="mr-2 h-5 w-5" />
+                          Settings
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <Button 
+                          variant="outline" 
+                          className="w-full flex items-center justify-center gap-2 text-red-500"
+                          onClick={() => logoutMutation.mutate()} 
+                          disabled={logoutMutation.isPending}
+                        >
+                          <LogOut className="h-5 w-5" />
+                          Logout
+                        </Button>
+                      </SheetClose>
+                    </>
+                  )}
+                  
                   {!isLoggedIn && (
                     <SheetClose asChild>
                       <Button asChild className="w-full">
                         <Link href="/auth">Sign In</Link>
                       </Button>
                     </SheetClose>
-                  )}
-                  
-                  {isLoggedIn && (
-                    <>
-                      <SheetClose asChild>
-                        <Link href="/dashboard" className="text-lg font-medium">
-                          Dashboard
-                        </Link>
-                      </SheetClose>
-                      
-                      <SheetClose asChild>
-                        <Button 
-                          variant="outline" 
-                          className="w-full"
-                          onClick={() => logoutMutation.mutate()} 
-                          disabled={logoutMutation.isPending}
-                        >
-                          Logout
-                        </Button>
-                      </SheetClose>
-                    </>
                   )}
                 </div>
               </SheetContent>
