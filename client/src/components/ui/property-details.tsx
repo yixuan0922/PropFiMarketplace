@@ -182,7 +182,16 @@ export function PropertyDetails({ property }: PropertyDetailsProps) {
                       <p className="text-neutral-700">
                         With PropFi, you can buy this property with as little as 55% ownership. The monthly payment would be approximately {formatCurrency(price * 0.55 * 0.004)} instead of {formatCurrency(price * 0.004)} for traditional ownership.
                       </p>
-                      <Button className="w-full">Schedule a Consultation</Button>
+                      <Button className="w-full" onClick={() => {
+                        // Close the dialog when clicked
+                        document.querySelector('[data-state="open"]')?.dispatchEvent(
+                          new MouseEvent('click', { bubbles: true, cancelable: true })
+                        );
+                        // Display a confirmation message
+                        alert("Consultation scheduled! Our team will contact you shortly.");
+                      }}>
+                        Schedule a Consultation
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -205,7 +214,16 @@ export function PropertyDetails({ property }: PropertyDetailsProps) {
                       <p className="text-neutral-700">
                         This property has an expected annual appreciation of 5-7% based on the local market. Token holders benefit from property appreciation and can sell their tokens on the PropFi marketplace.
                       </p>
-                      <Button className="w-full">Proceed to Investment</Button>
+                      <Button className="w-full" onClick={() => {
+                        // Close the dialog when clicked
+                        document.querySelector('[data-state="open"]')?.dispatchEvent(
+                          new MouseEvent('click', { bubbles: true, cancelable: true })
+                        );
+                        // Display a confirmation message
+                        alert("Investment process initiated! You'll be redirected to complete your purchase.");
+                      }}>
+                        Proceed to Investment
+                      </Button>
                     </div>
                   </DialogContent>
                 </Dialog>

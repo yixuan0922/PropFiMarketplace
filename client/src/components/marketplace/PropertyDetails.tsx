@@ -49,11 +49,9 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
         <h2 className="text-xl font-semibold text-neutral-900 mb-2">Property Not Found</h2>
         <p className="text-neutral-600 mb-6">Sorry, we couldn't find the property you're looking for.</p>
-        <Link href="/marketplace">
-          <a className="inline-flex items-center text-primary hover:underline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Marketplace
-          </a>
+        <Link href="/marketplace" className="inline-flex items-center text-primary hover:underline">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Marketplace
         </Link>
       </div>
     );
@@ -63,11 +61,9 @@ const PropertyDetails = ({ propertyId }: PropertyDetailsProps) => {
     <>
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Link href="/marketplace">
-            <a className="inline-flex items-center text-primary hover:underline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Marketplace
-            </a>
+          <Link href="/marketplace" className="inline-flex items-center text-primary hover:underline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Marketplace
           </Link>
         </div>
       </div>
