@@ -327,7 +327,7 @@ const MyPropertiesTab: React.FC<TabProps> = ({ userId }) => {
           
           {isDeveloper && (
             <Button asChild className="gap-2">
-              <Link href="/add-property">
+              <Link to="/add-property">
                 Add New Property
                 <PlusCircle className="h-4 w-4" />
               </Link>
