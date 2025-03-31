@@ -145,7 +145,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/properties", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      const propertyData = insertPropertySchema.parse(req.body);
+      // Convert numeric values to strings for Drizzle compatibility
+      const formattedData = {
+        ...req.body,
+        price: req.body.price?.toString(),
+        pricePerSqft: req.body.pricePerSqft?.toString(),
+        bedrooms: req.body.bedrooms?.toString(),
+        bathrooms: req.body.bathrooms?.toString(),
+        squareFeet: req.body.squareFeet?.toString(),
+        availableTokens: req.body.availableTokens?.toString(),
+        minimumInvestment: req.body.minimumInvestment?.toString(),
+      };
+      
+      const propertyData = insertPropertySchema.parse(formattedData);
       const property = await storage.createProperty(propertyData);
       res.status(201).json(property);
     } catch (error) {
