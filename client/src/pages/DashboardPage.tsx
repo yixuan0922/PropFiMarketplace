@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Link } from 'wouter';
-import { ArrowRight, Loader2, Building, DollarSign, FileText, BarChart3, Vote, ExternalLink, Share2 } from 'lucide-react';
+import { ArrowRight, Loader2, Building, DollarSign, FileText, BarChart3, Vote, ExternalLink, Share2, PlusCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useQuery } from '@tanstack/react-query';
 import { Investment, Property, User } from '@/lib/types';
@@ -164,9 +164,52 @@ interface TabProps {
   userId: number;
 }
 
+interface VotingProposal {
+  id: number;
+  title: string;
+  description: string;
+  votesYes: number;
+  votesNo: number;
+  deadline: string;
+}
+
 const MyPropertiesTab: React.FC<TabProps> = ({ userId }) => {
   const [sellDialogOpen, setSellDialogOpen] = useState(false);
+  const [voteDialogOpen, setVoteDialogOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<{ id: number; title: string; percentage: number } | null>(null);
+  const [selectedVotingOption, setSelectedVotingOption] = useState<"yes" | "no" | null>(null);
+  
+  // Get user to check role
+  const { user } = useAuth();
+  const isDeveloper = user?.role === 'developer' || user?.role === 'admin';
+  
+  // Sample voting proposals
+  const [votingProposals, setVotingProposals] = useState<VotingProposal[]>([
+    {
+      id: 1,
+      title: "Roof Renovation",
+      description: "Proposal to replace the roof with eco-friendly materials to increase property value.",
+      votesYes: 65,
+      votesNo: 15,
+      deadline: "2025-05-15"
+    },
+    {
+      id: 2,
+      title: "Common Area Upgrade",
+      description: "Upgrade common area facilities including gym equipment and lounge furniture.",
+      votesYes: 48,
+      votesNo: 32,
+      deadline: "2025-04-28"
+    },
+    {
+      id: 3,
+      title: "Security System Enhancement",
+      description: "Install additional security cameras and upgrade the entry system.",
+      votesYes: 73,
+      votesNo: 7,
+      deadline: "2025-05-10"
+    }
+  ]);
   
   // Fetch user investments to find properties owned by the user
   const { data: investments = [], isLoading } = useQuery<Investment[]>({
@@ -206,6 +249,37 @@ const MyPropertiesTab: React.FC<TabProps> = ({ userId }) => {
     setSellDialogOpen(true);
   };
   
+  const handleVoteClick = (property: Property & { ownershipPercentage: number }) => {
+    setSelectedProperty({
+      id: property.id,
+      title: property.title,
+      percentage: property.ownershipPercentage
+    });
+    setVoteDialogOpen(true);
+  };
+  
+  const handleCastVote = (proposalId: number, vote: "yes" | "no") => {
+    setVotingProposals(proposals => 
+      proposals.map(proposal => {
+        if (proposal.id === proposalId) {
+          if (vote === "yes") {
+            return { 
+              ...proposal, 
+              votesYes: proposal.votesYes + (selectedProperty?.percentage || 0) 
+            };
+          } else {
+            return { 
+              ...proposal, 
+              votesNo: proposal.votesNo + (selectedProperty?.percentage || 0) 
+            };
+          }
+        }
+        return proposal;
+      })
+    );
+    setSelectedVotingOption(null);
+  };
+  
   if (isLoading) {
     return (
       <div className="flex justify-center py-10">
@@ -243,11 +317,22 @@ const MyPropertiesTab: React.FC<TabProps> = ({ userId }) => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>My Properties</CardTitle>
-          <CardDescription>
-            Manage your property tokens and ownership details
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>My Properties</CardTitle>
+            <CardDescription>
+              Manage your property tokens and ownership details
+            </CardDescription>
+          </div>
+          
+          {isDeveloper && (
+            <Button asChild className="gap-2">
+              <Link href="/add-property">
+                Add New Property
+                <PlusCircle className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           <div className="grid gap-6">
@@ -359,7 +444,12 @@ const MyPropertiesTab: React.FC<TabProps> = ({ userId }) => {
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Button size="sm" variant="secondary" className="gap-1">
+                              <Button 
+                                size="sm" 
+                                variant="secondary" 
+                                className="gap-1"
+                                onClick={() => handleVoteClick(property)}
+                              >
                                 <Vote className="h-4 w-4" />
                                 Vote
                               </Button>
@@ -472,6 +562,92 @@ const MyPropertiesTab: React.FC<TabProps> = ({ userId }) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <Dialog open={voteDialogOpen} onOpenChange={setVoteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Vote on Property Proposals</DialogTitle>
+            <DialogDescription>
+              Cast your vote on active property proposals
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedProperty && (
+            <div className="space-y-6 py-2">
+              <div className="space-y-1">
+                <h4 className="font-medium">Property</h4>
+                <p>{selectedProperty.title}</p>
+              </div>
+              
+              <div className="space-y-1">
+                <h4 className="font-medium">Your Voting Power</h4>
+                <p>{selectedProperty.percentage}% ({selectedProperty.percentage} votes)</p>
+              </div>
+              
+              <div className="space-y-4">
+                <h4 className="font-medium text-lg border-b pb-2">Active Proposals</h4>
+                
+                {votingProposals.map((proposal) => {
+                  const totalVotes = proposal.votesYes + proposal.votesNo;
+                  const yesPercentage = totalVotes > 0 ? Math.round((proposal.votesYes / totalVotes) * 100) : 0;
+                  const noPercentage = totalVotes > 0 ? Math.round((proposal.votesNo / totalVotes) * 100) : 0;
+                  
+                  return (
+                    <div key={proposal.id} className="border rounded-md p-4 space-y-3">
+                      <div>
+                        <h5 className="font-medium">{proposal.title}</h5>
+                        <p className="text-sm text-neutral-600">{proposal.description}</p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Yes: {yesPercentage}%</span>
+                          <span>No: {noPercentage}%</span>
+                        </div>
+                        
+                        <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-green-500 rounded-full" 
+                            style={{ width: `${yesPercentage}%` }}
+                          />
+                        </div>
+                        
+                        <div className="text-xs text-neutral-500 flex justify-between">
+                          <span>Deadline: {new Date(proposal.deadline).toLocaleDateString()}</span>
+                          <span>Total Votes: {totalVotes}%</span>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2 flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => handleCastVote(proposal.id, "yes")}
+                        >
+                          Vote Yes
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => handleCastVote(proposal.id, "no")}
+                        >
+                          Vote No
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setVoteDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -501,7 +677,12 @@ const MyInvestmentsTab: React.FC<TabProps> = ({ userId }) => {
         returnPercentage: 8
       } : null;
     })
-    .filter(Boolean);
+    .filter((item): item is (Investment & { 
+      property: Property;
+      currentValue: number;
+      return: number;
+      returnPercentage: number;
+    }) => item !== null);
     
   if (isLoading) {
     return (

@@ -10,6 +10,7 @@ import InvestPage from "@/pages/InvestPage";
 import HowItWorksPage from "@/pages/HowItWorksPage";
 import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
+import AddPropertyPage from "@/pages/AddPropertyPage";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { AuthProvider } from "@/hooks/use-auth";
 
@@ -26,6 +27,7 @@ function Router() {
       <ProtectedRoute path="/dashboard" component={DashboardPage} />
       <ProtectedRoute path="/invest" component={InvestPage} />
       <ProtectedRoute path="/buy" component={MarketplacePage} />
+      <ProtectedRoute path="/add-property" component={AddPropertyPage} />
       
       <Route component={NotFound} />
     </Switch>
