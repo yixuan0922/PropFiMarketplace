@@ -147,7 +147,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                 <PlusCircle className="h-5 w-5 text-primary" />
               </div>
               <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
-                <Link href="/developer/add-property">
+                <Link to="/add-property">
                   <Eye className="mr-1 h-3 w-3" />
                   Add
                 </Link>
@@ -376,7 +376,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                 <CardDescription>Properties you've developed</CardDescription>
               </div>
               <Button asChild size="sm">
-                <Link href="/developer/add-property">
+                <Link to="/add-property">
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Add New Property
                 </Link>
@@ -441,7 +441,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                 <div className="text-center py-8">
                   <p className="text-neutral-600">No properties listed yet</p>
                   <Button asChild className="mt-4">
-                    <Link href="/developer/add-property">
+                    <Link to="/add-property">
                       <PlusCircle className="h-4 w-4 mr-2" />
                       Add Your First Property
                     </Link>
