@@ -81,7 +81,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                 <Users className="h-5 w-5 text-primary" />
               </div>
               <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
-                <Link href="/admin/users">
+                <Link to="/admin/users">
                   <Eye className="mr-1 h-3 w-3" />
                   View
                 </Link>
@@ -98,7 +98,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                 <Building className="h-5 w-5 text-purple-500" />
               </div>
               <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
-                <Link href="/admin/properties">
+                <Link to="/admin/properties">
                   <Eye className="mr-1 h-3 w-3" />
                   View
                 </Link>
@@ -130,7 +130,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                 <Building className="h-5 w-5 text-purple-500" />
               </div>
               <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
-                <Link href="/developer/properties">
+                <Link to="/properties">
                   <Eye className="mr-1 h-3 w-3" />
                   View
                 </Link>
@@ -180,7 +180,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                 <DollarSign className="h-5 w-5 text-primary" />
               </div>
               <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
-                <Link href="/invest">
+                <Link to="/invest">
                   <Eye className="mr-1 h-3 w-3" />
                   View
                 </Link>
@@ -209,7 +209,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                 <Home className="h-5 w-5 text-purple-500" />
               </div>
               <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
-                <Link href="/marketplace">
+                <Link to="/marketplace">
                   <Eye className="mr-1 h-3 w-3" />
                   View
                 </Link>
@@ -277,10 +277,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Link href={`/admin/users/${user.id}`} className="text-primary hover:text-primary-600 mr-3">
+                          <Link to={`/admin/users/${user.id}`} className="text-primary hover:text-primary-600 mr-3">
                             View
                           </Link>
-                          <Link href={`/admin/users/${user.id}/edit`} className="text-orange-600 hover:text-orange-800">
+                          <Link to={`/admin/users/${user.id}/edit`} className="text-orange-600 hover:text-orange-800">
                             Edit
                           </Link>
                         </td>
@@ -291,7 +291,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
               </div>
               {users.length > 5 && (
                 <div className="px-6 py-4 text-right">
-                  <Link href="/admin/users" className="text-primary hover:text-primary-600 text-sm font-medium">
+                  <Link to="/admin/users" className="text-primary hover:text-primary-600 text-sm font-medium">
                     View all {users.length} users
                   </Link>
                 </div>
@@ -343,10 +343,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Link href={`/property/${property.id}`} className="text-primary hover:text-primary-600 mr-3">
+                          <Link to={`/property/${property.id}`} className="text-primary hover:text-primary-600 mr-3">
                             View
                           </Link>
-                          <Link href={`/admin/properties/${property.id}/edit`} className="text-orange-600 hover:text-orange-800">
+                          <Link to={`/admin/properties/${property.id}/edit`} className="text-orange-600 hover:text-orange-800">
                             Edit
                           </Link>
                         </td>
@@ -357,7 +357,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
               </div>
               {properties.length > 5 && (
                 <div className="px-6 py-4 text-right">
-                  <Link href="/admin/properties" className="text-primary hover:text-primary-600 text-sm font-medium">
+                  <Link to="/admin/properties" className="text-primary hover:text-primary-600 text-sm font-medium">
                     View all {properties.length} properties
                   </Link>
                 </div>
@@ -425,10 +425,10 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <Link href={`/property/${property.id}`} className="text-primary hover:text-primary-600 mr-3">
+                            <Link to={`/property/${property.id}`} className="text-primary hover:text-primary-600 mr-3">
                               View
                             </Link>
-                            <Link href={`/developer/properties/${property.id}/edit`} className="text-orange-600 hover:text-orange-800">
+                            <Link to={`/properties/${property.id}/edit`} className="text-orange-600 hover:text-orange-800">
                               Edit
                             </Link>
                           </td>
@@ -553,7 +553,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <Link href={`/property/${investment.propertyId}`} className="text-primary hover:text-primary-600">
+                            <Link to={`/property/${investment.propertyId}`} className="text-primary hover:text-primary-600">
                               View
                             </Link>
                           </td>
@@ -641,13 +641,13 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ userId }) => {
               </p>
               <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <Button asChild>
-                  <Link href="/marketplace">
+                  <Link to="/marketplace">
                     Browse Properties
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
                 <Button variant="outline" asChild>
-                  <Link href="/invest">
+                  <Link to="/invest">
                     View Investment Options
                   </Link>
                 </Button>
