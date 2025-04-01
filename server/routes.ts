@@ -145,14 +145,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/properties", isAuthenticated, async (req: Request, res: Response) => {
     try {
-      // Convert numeric values to strings for Drizzle compatibility
+      // Format data for Drizzle compatibility - some fields need to be numbers, others strings
       const formattedData = {
         ...req.body,
         price: req.body.price?.toString(),
         pricePerSqft: req.body.pricePerSqft?.toString(),
-        bedrooms: req.body.bedrooms?.toString(),
+        bedrooms: Number(req.body.bedrooms),
         bathrooms: req.body.bathrooms?.toString(),
-        squareFeet: req.body.squareFeet?.toString(),
+        squareFeet: Number(req.body.squareFeet),
         availableTokens: req.body.availableTokens?.toString(),
         minimumInvestment: req.body.minimumInvestment?.toString(),
       };
