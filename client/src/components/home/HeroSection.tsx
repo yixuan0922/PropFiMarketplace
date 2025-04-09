@@ -14,7 +14,7 @@ const HeroSection = () => {
               PropFi is a digital marketplace for fractional property ownership. Buy your dream home with just 55% ownership or invest in property tokens for passive income.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Button variant="secondary" size="lg" className="bg-white text-primary-700 hover:bg-neutral-100" asChild>
+              <Button variant="secondary" size="lg" className="bg-white text-black hover:bg-neutral-100" asChild>
                 <Link href="/marketplace">Browse Properties</Link>
               </Button>
               <Button variant="outline" size="lg" className="border-white text-white hover:bg-primary-600" asChild>
