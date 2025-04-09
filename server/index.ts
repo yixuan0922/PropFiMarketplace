@@ -1,6 +1,14 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { User } from "@shared/schema";
+
+// Extend Express types for passport
+declare global {
+  namespace Express {
+    interface User extends User { }
+  }
+}
 
 const app = express();
 app.use(express.json());

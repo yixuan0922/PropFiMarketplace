@@ -122,6 +122,17 @@ export class MemStorage implements IStorage {
         isHomebuyer: false
       },
       {
+        username: "developer2",
+        password: "password123",
+        firstName: "Michael",
+        lastName: "Constructor",
+        email: "michael@example.com",
+        profileImage: "https://randomuser.me/api/portraits/men/5.jpg",
+        role: "developer",
+        isInvestor: false,
+        isHomebuyer: false
+      },
+      {
         username: "admin1",
         password: "password123",
         firstName: "Admin",
@@ -136,7 +147,7 @@ export class MemStorage implements IStorage {
     
     const userPromises = sampleUsers.map(user => this.createUser(user));
     
-    // Add sample properties
+    // Add sample properties - all assigned to developer1 (user ID 3)
     const sampleProperties: InsertProperty[] = [
       {
         title: "Modern Downtown Condo",
@@ -144,17 +155,18 @@ export class MemStorage implements IStorage {
         city: "San Francisco",
         state: "CA",
         zipCode: "94105",
-        price: 600000,
-        pricePerSqft: 1200,
+        price: "600000",
+        pricePerSqft: "1200",
         bedrooms: 2,
-        bathrooms: 2,
+        bathrooms: "2",
         squareFeet: 1200,
         description: "Beautiful modern condo in the heart of downtown San Francisco.",
         propertyType: "condo",
         imageUrl: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914",
-        availableTokens: 45,
-        minimumInvestment: 10,
-        status: "active"
+        availableTokens: "45",
+        minimumInvestment: "10",
+        status: "active",
+        developerId: 3 // developer1
       },
       {
         title: "Suburban Family Home",
@@ -162,17 +174,18 @@ export class MemStorage implements IStorage {
         city: "Austin",
         state: "TX",
         zipCode: "78701",
-        price: 450000,
-        pricePerSqft: 225,
+        price: "450000",
+        pricePerSqft: "225",
         bedrooms: 4,
-        bathrooms: 2.5,
+        bathrooms: "2.5",
         squareFeet: 2000,
         description: "Spacious family home in a quiet suburban neighborhood.",
         propertyType: "house",
         imageUrl: "https://images.unsplash.com/photo-1568605114967-8130f3a36994",
-        availableTokens: 40,
-        minimumInvestment: 10,
-        status: "active"
+        availableTokens: "40",
+        minimumInvestment: "10",
+        status: "active",
+        developerId: 3 // developer1
       },
       {
         title: "Luxury Beachfront Villa",
@@ -180,17 +193,18 @@ export class MemStorage implements IStorage {
         city: "Miami",
         state: "FL",
         zipCode: "33139",
-        price: 1200000,
-        pricePerSqft: 800,
+        price: "1200000",
+        pricePerSqft: "800",
         bedrooms: 3,
-        bathrooms: 3.5,
+        bathrooms: "3.5",
         squareFeet: 1500,
         description: "Stunning beachfront villa with panoramic ocean views.",
         propertyType: "house",
         imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
-        availableTokens: 35,
-        minimumInvestment: 10,
-        status: "active"
+        availableTokens: "35",
+        minimumInvestment: "10",
+        status: "active",
+        developerId: 3 // developer1
       }
     ];
     
@@ -202,22 +216,22 @@ export class MemStorage implements IStorage {
         {
           userId: 1, // investor1
           propertyId: 1, // Modern Downtown Condo
-          percentage: 10,
-          amount: 60000,
+          percentage: "10",
+          amount: "60000",
           isOccupier: false
         },
         {
           userId: 1, // investor1
           propertyId: 3, // Luxury Beachfront Villa
-          percentage: 5,
-          amount: 60000,
+          percentage: "5",
+          amount: "60000",
           isOccupier: false
         },
         {
           userId: 2, // investor2
           propertyId: 2, // Suburban Family Home
-          percentage: 15,
-          amount: 67500,
+          percentage: "15",
+          amount: "67500",
           isOccupier: false
         }
       ];
@@ -271,11 +285,22 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
     const now = new Date();
+    
+    // Ensure all fields have proper null values if they don't exist
     const user: User = { 
-      ...insertUser, 
       id,
+      username: insertUser.username,
+      password: insertUser.password,
+      email: insertUser.email,
+      firstName: insertUser.firstName || null,
+      lastName: insertUser.lastName || null,
+      profileImage: insertUser.profileImage || null,
+      role: insertUser.role || 'investor',
+      isInvestor: insertUser.isInvestor === undefined ? null : insertUser.isInvestor,
+      isHomebuyer: insertUser.isHomebuyer === undefined ? null : insertUser.isHomebuyer,
       createdAt: now
     };
+    
     this.users.set(id, user);
     return user;
   }
@@ -298,11 +323,30 @@ export class MemStorage implements IStorage {
   async createProperty(insertProperty: InsertProperty): Promise<Property> {
     const id = this.propertyIdCounter++;
     const now = new Date();
+    
+    // Ensure all fields have proper null values if they don't exist
     const property: Property = {
-      ...insertProperty,
       id,
+      title: insertProperty.title,
+      address: insertProperty.address,
+      city: insertProperty.city,
+      state: insertProperty.state,
+      zipCode: insertProperty.zipCode,
+      price: insertProperty.price,
+      pricePerSqft: insertProperty.pricePerSqft || null,
+      bedrooms: insertProperty.bedrooms,
+      bathrooms: insertProperty.bathrooms,
+      squareFeet: insertProperty.squareFeet,
+      description: insertProperty.description || null,
+      propertyType: insertProperty.propertyType,
+      imageUrl: insertProperty.imageUrl || null,
+      availableTokens: insertProperty.availableTokens,
+      minimumInvestment: insertProperty.minimumInvestment,
+      status: insertProperty.status || "active",
+      developerId: insertProperty.developerId || null,
       createdAt: now
     };
+    
     this.properties.set(id, property);
     return property;
   }
@@ -313,7 +357,7 @@ export class MemStorage implements IStorage {
     
     const updatedProperty: Property = {
       ...property,
-      availableTokens
+      availableTokens: availableTokens.toString()
     };
     this.properties.set(id, updatedProperty);
     return updatedProperty;
@@ -339,11 +383,18 @@ export class MemStorage implements IStorage {
   async createInvestment(insertInvestment: InsertInvestment): Promise<Investment> {
     const id = this.investmentIdCounter++;
     const now = new Date();
+    
+    // Ensure all fields have proper null values if they don't exist
     const investment: Investment = {
-      ...insertInvestment,
       id,
-      investmentDate: now
+      userId: insertInvestment.userId,
+      propertyId: insertInvestment.propertyId,
+      percentage: insertInvestment.percentage,
+      amount: insertInvestment.amount,
+      investmentDate: now,
+      isOccupier: insertInvestment.isOccupier === undefined ? null : insertInvestment.isOccupier
     };
+    
     this.investments.set(id, investment);
     return investment;
   }
@@ -368,12 +419,20 @@ export class MemStorage implements IStorage {
   async createTokenTransaction(insertTransaction: InsertTokenTransaction): Promise<TokenTransaction> {
     const id = this.tokenTransactionIdCounter++;
     const now = new Date();
+    
+    // Ensure all fields have proper null values if they don't exist
     const transaction: TokenTransaction = {
-      ...insertTransaction,
       id,
+      propertyId: insertTransaction.propertyId,
+      sellerId: insertTransaction.sellerId || null,
+      buyerId: insertTransaction.buyerId || null,
+      percentage: insertTransaction.percentage,
+      amount: insertTransaction.amount,
+      status: insertTransaction.status,
       createdAt: now,
-      completedAt: insertTransaction.status === 'completed' ? now : undefined
+      completedAt: insertTransaction.status === 'completed' ? now : null
     };
+    
     this.tokenTransactions.set(id, transaction);
     return transaction;
   }
@@ -385,7 +444,7 @@ export class MemStorage implements IStorage {
     const updatedTransaction: TokenTransaction = {
       ...transaction,
       status,
-      completedAt: status === 'completed' ? completedAt || new Date() : transaction.completedAt
+      completedAt: status === 'completed' ? completedAt || new Date() : transaction.completedAt || null
     };
     this.tokenTransactions.set(id, updatedTransaction);
     return updatedTransaction;
@@ -411,11 +470,19 @@ export class MemStorage implements IStorage {
   async createConsultation(insertConsultation: InsertConsultation): Promise<Consultation> {
     const id = this.consultationIdCounter++;
     const now = new Date();
+    
+    // Ensure all fields have proper null values if they don't exist
     const consultation: Consultation = {
-      ...insertConsultation,
       id,
+      userId: insertConsultation.userId,
+      propertyId: insertConsultation.propertyId,
+      type: insertConsultation.type,
+      notes: insertConsultation.notes || null,
+      status: insertConsultation.status || "scheduled",
+      scheduledDate: insertConsultation.scheduledDate,
       createdAt: now
     };
+    
     this.consultations.set(id, consultation);
     return consultation;
   }

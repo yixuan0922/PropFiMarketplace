@@ -36,6 +36,7 @@ export const properties = pgTable("properties", {
   availableTokens: numeric("available_tokens").notNull(), // percentage available for investors
   minimumInvestment: numeric("minimum_investment").notNull(), // minimum percentage/amount
   status: text("status").notNull().default("active"), // active, pending, sold
+  developerId: integer("developer_id").references(() => users.id), // developer who created this property
   createdAt: timestamp("created_at").defaultNow(),
 });
 

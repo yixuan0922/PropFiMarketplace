@@ -58,7 +58,7 @@ function setupAuth(app: Express) {
   }));
 
   // Serialize user to session
-  passport.serializeUser((user: User, done) => {
+  passport.serializeUser(function(user: Express.User, done) {
     done(null, user.id);
   });
 
@@ -259,9 +259,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const investment = await storage.createInvestment(investmentData);
       
       // Update property available tokens
+      const currentTokens = parseFloat(property.availableTokens);
+      const investmentTokens = parseFloat(investmentData.percentage.toString());
       await storage.updatePropertyTokens(
         property.id, 
-        Number(property.availableTokens) - Number(investmentData.percentage)
+        currentTokens - investmentTokens
       );
       
       res.status(201).json(investment);
