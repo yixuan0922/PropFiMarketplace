@@ -22,11 +22,16 @@ declare module 'express-session' {
 function setupAuth(app: Express) {
   // Use Express session middleware
   app.use(session({
-    secret: 'propfi-secret-key',
+    secret: process.env.SESSION_SECRET || 'propfi-secret-key',
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
+    cookie: { 
+      secure: process.env.NODE_ENV === 'production',
+      // Add same-site and max-age for better security in production
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+    }
   }));
 
   // Initialize Passport and restore authentication state from session
