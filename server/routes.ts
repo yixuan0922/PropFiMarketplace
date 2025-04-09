@@ -23,13 +23,13 @@ function setupAuth(app: Express) {
   // Use Express session middleware
   app.use(session({
     secret: process.env.SESSION_SECRET || 'propfi-secret-key',
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
     store: storage.sessionStore,
     cookie: { 
-      secure: process.env.NODE_ENV === 'production',
-      // Add same-site and max-age for better security in production
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: false, // Set to false for development, production should handle HTTPS properly
+      httpOnly: true,
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
     }
   }));
@@ -58,7 +58,7 @@ function setupAuth(app: Express) {
   }));
 
   // Serialize user to session
-  passport.serializeUser(function(user: Express.User, done) {
+  passport.serializeUser(function(user: any, done) {
     done(null, user.id);
   });
 
@@ -95,7 +95,7 @@ function setupAuth(app: Express) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
     
-    const user = req.user as User;
+    const user = req.user as any; // Use any to avoid type issues
     const { password, ...userWithoutPassword } = user;
     res.json(userWithoutPassword);
   });
@@ -387,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Verify user is requesting their own consultations or is an admin
-      const user = req.user as User;
+      const user = req.user as any;
       if (user.id !== id && user.role !== 'admin') {
         return res.status(403).json({ message: "Unauthorized to view these consultations" });
       }

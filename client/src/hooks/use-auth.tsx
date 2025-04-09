@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   } = useQuery<Omit<User, 'password'> | null, Error>({
     queryKey: ['/api/current-user'],
     queryFn: getQueryFn({ on401: "returnNull" }),
+    retry: false,
   });
 
   const loginMutation = useMutation({
