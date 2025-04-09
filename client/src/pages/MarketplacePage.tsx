@@ -19,7 +19,7 @@ const MarketplacePage: React.FC = () => {
               </p>
             </div>
             <div>
-              <Button variant="secondary" className="bg-white text-primary-700 hover:bg-neutral-100" asChild>
+              <Button variant="secondary" className="bg-white text-black hover:bg-neutral-100" asChild>
                 <Link href="/invest">
                   View Investment Opportunities
                   <ArrowRight className="ml-2 h-4 w-4" />

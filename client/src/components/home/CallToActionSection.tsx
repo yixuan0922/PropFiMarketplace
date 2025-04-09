@@ -16,13 +16,13 @@ const CallToActionSection = () => {
             </p>
           </div>
           <div className="mt-8 lg:mt-0 lg:ml-8 flex flex-col sm:flex-row sm:space-x-4">
-            <Button variant="secondary" size="lg" className="bg-white text-primary-700 hover:bg-neutral-100" asChild>
+            <Button variant="secondary" size="lg" className="bg-white text-black hover:bg-neutral-100" asChild>
               <Link href="/signup">Create Account</Link>
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
-              className="mt-4 sm:mt-0 border-white text-white hover:bg-primary-600"
+              className="mt-4 sm:mt-0 border-white text-black hover:bg-primary-600"
               asChild
             >
               <Link href="/demo">Schedule Demo</Link>
