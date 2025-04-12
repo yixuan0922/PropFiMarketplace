@@ -15,6 +15,7 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("investor"),
   isInvestor: boolean("is_investor").default(false),
   isHomebuyer: boolean("is_homebuyer").default(false),
+  walletBalance: numeric("wallet_balance").default("10000"), // Default $10,000 starting balance
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -84,6 +85,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   role: true,
   isInvestor: true,
   isHomebuyer: true,
+  walletBalance: true,
 });
 
 export const insertPropertySchema = createInsertSchema(properties).omit({
