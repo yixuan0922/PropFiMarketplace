@@ -54,8 +54,8 @@ const InvestCheckoutPage: React.FC = () => {
       const investment = {
         userId: user.id,
         propertyId: property.id,
-        percentage: ownershipPercentage,
-        amount: investmentAmount,
+        percentage: ownershipPercentage.toString(), // Convert to string as required by the API
+        amount: investmentAmount.toString(), // Convert to string as required by the API
         investmentDate: new Date().toISOString(),
         isOccupier: false,
       };
@@ -132,7 +132,7 @@ const InvestCheckoutPage: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       <Button variant="ghost" asChild className="mb-6">
-        <Link to={`/properties/${propertyId}`}>
+        <Link to={`/property/${propertyId}`}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Property
         </Link>
