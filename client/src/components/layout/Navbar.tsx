@@ -15,8 +15,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BellIcon, MenuIcon, User, Settings, LogOut } from 'lucide-react';
+import { BellIcon, MenuIcon, User, Settings, LogOut, Wallet } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 
 const NavLink: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => {
@@ -72,6 +73,13 @@ const Navbar = () => {
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             {isLoggedIn ? (
               <div className="flex items-center space-x-4">
+                <div className="flex items-center bg-primary/10 rounded-full px-3 py-1">
+                  <Wallet className="w-4 h-4 text-primary mr-1.5" />
+                  <span className="font-medium text-sm">
+                    ${parseFloat(user?.walletBalance || '0').toLocaleString('en-US')}
+                  </span>
+                </div>
+
                 <Button variant="ghost" size="icon" className="mr-2">
                   <BellIcon className="w-5 h-5 text-neutral-400 hover:text-neutral-500" />
                   <span className="sr-only">Notifications</span>
@@ -98,6 +106,12 @@ const Navbar = () => {
                         <p className="text-xs leading-none text-muted-foreground">
                           {user?.email}
                         </p>
+                        <div className="flex items-center mt-2">
+                          <Wallet className="w-3.5 h-3.5 text-primary mr-1.5" />
+                          <span className="text-xs font-medium">
+                            ${parseFloat(user?.walletBalance || '0').toLocaleString('en-US')}
+                          </span>
+                        </div>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
@@ -160,6 +174,12 @@ const Navbar = () => {
                         <p className="text-sm text-muted-foreground truncate max-w-[180px]">
                           {user?.email}
                         </p>
+                        <div className="flex items-center mt-2 bg-primary/10 rounded-full px-2.5 py-0.5 w-fit">
+                          <Wallet className="w-3 h-3 text-primary mr-1" />
+                          <span className="font-medium text-xs">
+                            ${parseFloat(user?.walletBalance || '0').toLocaleString('en-US')}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )}

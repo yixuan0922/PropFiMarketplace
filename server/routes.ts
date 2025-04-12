@@ -255,6 +255,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Not enough tokens available" });
       }
       
+      // Check if user has enough funds in wallet
+      const investmentAmount = parseFloat(investmentData.amount.toString());
+      const userBalance = parseFloat(user.walletBalance || "0");
+      
+      if (userBalance < investmentAmount) {
+        return res.status(400).json({ message: "Insufficient wallet balance for this investment" });
+      }
+      
       // Create investment
       const investment = await storage.createInvestment(investmentData);
       
@@ -265,6 +273,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         property.id, 
         currentTokens - investmentTokens
       );
+      
+      // Update user's wallet balance
+      const newBalance = userBalance - investmentAmount;
+      await storage.updateUserWalletBalance(user.id, newBalance);
       
       res.status(201).json(investment);
     } catch (error) {
