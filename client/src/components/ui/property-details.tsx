@@ -219,8 +219,14 @@ export function PropertyDetails({ property }: PropertyDetailsProps) {
                         document.querySelector('[data-state="open"]')?.dispatchEvent(
                           new MouseEvent('click', { bubbles: true, cancelable: true })
                         );
-                        // Display a confirmation message
+                        
+                        // Display a confirmation message and redirect
                         alert("Investment process initiated! You'll be redirected to complete your purchase.");
+                        
+                        // Set a small timeout to allow the alert to be dismissed first
+                        setTimeout(() => {
+                          window.location.href = `/invest/checkout/${property.id}?amount=${price * (minimumInvestment / 100)}`;
+                        }, 500);
                       }}>
                         Proceed to Investment
                       </Button>

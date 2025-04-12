@@ -7,6 +7,7 @@ import MarketplacePage from "@/pages/MarketplacePage";
 import PropertyDetailsPage from "@/pages/PropertyDetailsPage";
 import DashboardPage from "@/pages/DashboardPage";
 import InvestPage from "@/pages/InvestPage";
+import InvestCheckoutPage from "@/pages/InvestCheckoutPage";
 import HowItWorksPage from "@/pages/HowItWorksPage";
 import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
@@ -26,6 +27,7 @@ function Router() {
       {/* Protected Routes */}
       <ProtectedRoute path="/dashboard" component={DashboardPage} />
       <ProtectedRoute path="/invest" component={InvestPage} />
+      <ProtectedRoute path="/invest/checkout/:propertyId" component={InvestCheckoutPage} />
       <ProtectedRoute path="/buy" component={MarketplacePage} />
       <ProtectedRoute path="/add-property" component={AddPropertyPage} />
       
