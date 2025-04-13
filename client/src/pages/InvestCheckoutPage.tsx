@@ -153,7 +153,7 @@ const InvestCheckoutPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <Label htmlFor="amount">Investment Amount</Label>
                   <span className="text-sm text-gray-500">
-                    Min: {formatCurrency(property.price * (property.minimumInvestment / 100))}
+                    Min: {formatCurrency(500)}
                   </span>
                 </div>
                 <div className="relative">
@@ -166,7 +166,7 @@ const InvestCheckoutPage: React.FC = () => {
                     value={investmentAmount}
                     onChange={(e) => setInvestmentAmount(parseFloat(e.target.value) || 0)}
                     className="pl-10"
-                    min={property.price * (property.minimumInvestment / 100)}
+                    min={500}
                     max={property.price * (property.availableTokens / 100)}
                     required
                   />
@@ -178,7 +178,7 @@ const InvestCheckoutPage: React.FC = () => {
                 <Slider
                   defaultValue={[ownershipPercentage]}
                   max={property.availableTokens}
-                  min={property.minimumInvestment}
+                  min={500 / property.price * 100} // Calculate min % based on $500
                   step={0.1}
                   value={[ownershipPercentage]}
                   onValueChange={(values) => {
@@ -188,9 +188,9 @@ const InvestCheckoutPage: React.FC = () => {
                   className="mt-2"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{property.minimumInvestment}%</span>
-                  <span className="text-primary font-medium">{ownershipPercentage}%</span>
-                  <span>{property.availableTokens}%</span>
+                  <span>{(500 / property.price * 100).toFixed(2)}%</span>
+                  <span className="text-primary font-medium">{ownershipPercentage.toFixed(2)}%</span>
+                  <span>{parseFloat(property.availableTokens.toString()).toFixed(2)}%</span>
                 </div>
               </div>
               
@@ -207,11 +207,11 @@ const InvestCheckoutPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Ownership Percentage</span>
-                  <span>{ownershipPercentage}%</span>
+                  <span>{ownershipPercentage.toFixed(2)}%</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Available Tokens</span>
-                  <span>{property.availableTokens}%</span>
+                  <span>{parseFloat(property.availableTokens.toString()).toFixed(2)}%</span>
                 </div>
                 
                 <Separator />
